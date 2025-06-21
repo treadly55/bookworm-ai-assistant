@@ -1,27 +1,15 @@
-import OpenAI from 'openai';
 import './style.css'
+
 // --- Configuration and HTML Elements ---
-const VITE_OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const responseArea = document.getElementById('responseArea');
-const questionField = document.getElementById('questionField'); // Get reference to the input field
-const submitButton = document.getElementById('submitButton');   // Get reference to the submit button
+const questionField = document.getElementById('questionField');
+const submitButton = document.getElementById('submitButton');
 const responseSpace = document.getElementById('responsespace')
-const retryButton = document.getElementById('retry'); // <<<< ENSURE THIS LINE EXISTS AND IS CORRECT
+const retryButton = document.getElementById('retry');
+const loadingOverlay = document.getElementById('loadingOverlay');
 
-
-// --- Initialize OpenAI Client (Essential for all operations) ---
-let openai;
-if (VITE_OPENAI_API_KEY) {
-    openai = new OpenAI({
-        apiKey: VITE_OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true
-    });
-    console.log("✅ OpenAI Client Initialized successfully.");
-    if (responseArea) responseArea.textContent = "OpenAI client initialized. Ready to interact with Assistant.";
-} else {
-    console.error("🔴 FATAL: OpenAI API Key not found. Please ensure VITE_OPENAI_API_KEY is set in your .env file and accessible.");
-    if (responseArea) responseArea.textContent = "FATAL: OpenAI API Key not found. Interaction disabled.";
-}
+console.log("✅ Application initialized. Ready to interact with Assistant.");
+if (responseArea) responseArea.textContent = "Application ready. Our AI bookworm is standing by for recommendations!";
 
 // --- ONE-TIME SETUP FUNCTIONS (Commented out as setup is complete) ---
 // These functions were used for the initial setup of the assistant and vector store.
@@ -141,85 +129,35 @@ async function step3_linkVectorStoreToAssistant(assistantId, vectorStoreId) {
 }
 */
 
-
 // --- ACTIVE FUNCTION: INTERACT WITH THE ASSISTANT (Primary function for ongoing use) ---
 /**
  * Creates a thread, adds a message, runs the assistant, and gets the reply.
- * @param {string} assistantId The ID of the pre-configured assistant to run.
  * @param {string} userQuestion The question to ask the assistant.
- * @returns {Promise<string|null>} The assistant's reply or null on failure.
+ * @returns {Promise<Object>} The assistant's reply object or error object.
  */
-
-
-async function askAssistant(assistantId, userQuestion) {
-    if (!openai || !assistantId) {
-        console.error("🔴 OpenAI client or Assistant ID missing. Cannot ask question.");
-        // Return an error object
-        return { error: "Client or Assistant ID missing for interaction." };
-    }
-
-    console.log(`💬 Asking Assistant (ID: ${assistantId}): "${userQuestion}"`);
-    // REMOVE any lines here that set responseArea.innerHTML for "Thinking..."
-
+async function askAssistant(userQuestion) {
+    console.log(`💬 Asking Assistant: "${userQuestion}"`);
+    
     try {
-        console.log("   Creating a new thread...");
-        const thread = await openai.beta.threads.create();
-        console.log("   ✅ Thread created. ID:", thread.id);
-
-        console.log(`   Adding message to thread: "${userQuestion}"`);
-        await openai.beta.threads.messages.create(thread.id, {
-            role: "user",
-            content: userQuestion
+        const response = await fetch('/api/ask-assistant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: userQuestion })
         });
-        console.log("   ✅ Message added to thread.");
 
-        console.log("   Creating and polling run (this may take a moment)...");
-        const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
-            assistant_id: assistantId
-        });
-        console.log("   ✅ Run completed! Status:", run.status);
-
-        if (run.status === 'completed') {
-            console.log("   Fetching messages from the thread...");
-            const messagesPage = await openai.beta.threads.messages.list(thread.id, { order: "asc" });
-            const assistantMessages = messagesPage.data.filter(msg => msg.role === 'assistant');
-            
-            if (assistantMessages.length > 0) {
-                let fullReply = "";
-                // Consider taking only the last assistant message for the current turn
-                const latestAssistantMsg = assistantMessages[assistantMessages.length - 1]; 
-                latestAssistantMsg.content.forEach(contentItem => {
-                    if (contentItem.type === 'text') {
-                        fullReply += contentItem.text.value + "\n";
-                        if (contentItem.text.annotations) {
-                            contentItem.text.annotations.forEach(annotation => {
-                                if (annotation.type === 'file_citation' || annotation.type === 'file_path') {
-                                    console.log("   🔍 Assistant cited a file:", annotation);
-                                }
-                            });
-                        }
-                    }
-                });
-                
-                const assistantReplyText = fullReply.trim();
-                console.log("   🗣️ Assistant's reply:", assistantReplyText);
-                // Return a success object with the text
-                return { success: true, text: assistantReplyText };
-            } else {
-                console.log("   ⚠️ No new assistant messages found after run completion.");
-                // Return an object indicating success false (or an error, depending on how you want to treat this)
-                // but still provide text for the user.
-                return { success: false, text: "I'm sorry, I didn't find a specific answer this time." };
-            }
-        } else {
-            console.error("🔴 Run did not complete successfully. Status:", run.status, run);
-            // Return an error object
-            return { error: `Run failed with status ${run.status}. Check console for details.` };
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const result = await response.json();
+        console.log('✅ API Response received:', result);
+        
+        return result;
     } catch (error) {
-        console.error("🔴 Error during interaction with assistant:", error);
-        // Return an error object
-        return { error: `An error occurred: ${error.message}. Check console.` };
+        console.error('🔴 Error calling API:', error);
+        return { error: `Network error: ${error.message}` };
     }
 }
 
@@ -227,24 +165,10 @@ async function askAssistant(assistantId, userQuestion) {
  * Main function to set up the interaction listener.
  */
 function setupInteraction() {
-    if (!openai) {
-        console.log("🔴 OpenAI client not initialized. Cannot set up interaction.");
-        // Further error display handled by initial check
-        return;
-    }
-
-    const assistantIdToUse = "asst_izG16o3Nm10JCJrUns2uceBq"; // YOUR Assistant ID
-
-    if (!assistantIdToUse) {
-        console.error("🔴 FATAL: `assistantIdToUse` is not set.");
-        if (responseArea) responseArea.textContent = "FATAL: Assistant ID not configured.";
-        if (submitButton) submitButton.disabled = true;
-        return;
-    }
+    console.log('✅ Setting up UI interaction');
     
-    console.log(`✅ Ready to interact with Assistant ID: ${assistantIdToUse}`);
     if (responseArea && responseArea.textContent === '...') {
-         responseArea.textContent = "Describe your preferred reading style or a book you liked, and I'll try to find a match!";
+        responseArea.textContent = "Describe your preferred reading style or a book you liked, and I'll try to find a match!";
     }
 
     if (submitButton && questionField && loadingOverlay && responseSpace && responseArea) {
@@ -262,7 +186,7 @@ function setupInteraction() {
             submitButton.textContent = 'Thinking...'; // Button text still useful
 
             // 2. Call API
-            const result = await askAssistant(assistantIdToUse, question);
+            const result = await askAssistant(question);
 
             // 3. Hide Loading State
             loadingOverlay.style.display = 'none';
@@ -304,27 +228,12 @@ function setupInteraction() {
     } else {
         console.error("🔴 Could not find all elements for retry button functionality.");
     }
-    console.log("UI Interaction setup finished.");
+    console.log("✅ UI Interaction setup finished.");
 }
 
-if (openai) {
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", setupInteraction);
-    } else {
-        setupInteraction(); 
-    }
+// --- SIMPLIFIED initialization ---
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupInteraction);
 } else {
-    console.log("🔴 Main interaction setup not started (OpenAI client failed to initialize).");
-    const initialSetupError = () => {
-        if(responseArea && !VITE_OPENAI_API_KEY) {
-            responseArea.innerHTML = "<strong>Application Error:</strong> OpenAI API Key is missing. Please configure it and refresh.";
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
-        }
-    };
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initialSetupError);
-    } else {
-        initialSetupError();
-    }
+    setupInteraction(); 
 }
-
