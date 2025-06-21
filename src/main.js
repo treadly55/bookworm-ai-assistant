@@ -1,6 +1,6 @@
 import './style.css'
 
-// --- Configuration and HTML Elements ---
+// Configuration and HTML Elements
 const responseArea = document.getElementById('responseArea');
 const questionField = document.getElementById('questionField');
 const submitButton = document.getElementById('submitButton');
@@ -8,19 +8,17 @@ const responseSpace = document.getElementById('responsespace')
 const retryButton = document.getElementById('retry');
 const loadingOverlay = document.getElementById('loadingOverlay');
 
-console.log("✅ Application initialized. Ready to interact with Assistant.");
+console.log("Application initialized. Ready to interact with Assistant.");
 if (responseArea) responseArea.textContent = "Application ready. Our AI bookworm is standing by for recommendations!";
 
-// --- ONE-TIME SETUP FUNCTIONS (Commented out as setup is complete) ---
+// ONE-TIME SETUP FUNCTIONS (Reference Documentation)
 // These functions were used for the initial setup of the assistant and vector store.
-// You can uncomment and run them if you need to recreate or modify the setup.
+// They are preserved here for documentation purposes and can be used to recreate the setup if needed.
 /*
-// -----------------------------------------------------------------------------
-// SECTION: STEP 1 - CREATE ASSISTANT (Run Once)
-// -----------------------------------------------------------------------------
+// STEP 1 - CREATE ASSISTANT (Run Once)
 async function step1_createAssistant() {
-    if (!openai) { console.error("🔴 OpenAI client not initialized..."); return null; }
-    console.log("🔄 Attempting to create a new Assistant (Step 1)...");
+    if (!openai) { console.error("OpenAI client not initialized..."); return null; }
+    console.log("Attempting to create a new Assistant (Step 1)...");
     try {
         const assistantConfig = {
             name: "Movie Recommender",
@@ -29,114 +27,87 @@ async function step1_createAssistant() {
             tools: [] // Tools like file_search are added/configured when linking vector store
         };
         const assistant = await openai.beta.assistants.create(assistantConfig);
-        console.log("✅🎉 Assistant created successfully (Step 1)!");
+        console.log("Assistant created successfully (Step 1)!");
         console.log("   Assistant ID:   ", assistant.id); // IMPORTANT: Save this ID
         return assistant.id;
     } catch (error) {
-        console.error("🔴 Error during Assistant creation (Step 1):", error);
+        console.error("Error during Assistant creation (Step 1):", error);
         return null;
     }
 }
 
-// -----------------------------------------------------------------------------
-// SECTION: FILE HANDLING HELPER (Used by Step 2)
-// -----------------------------------------------------------------------------
+// FILE HANDLING HELPER (Used by Step 2)
 async function getFileObjectFromPublicPath(filePath) {
     try {
         const response = await fetch(filePath);
         if (!response.ok) { throw new Error(`Failed to fetch file: ${filePath}`); }
         const blob = await response.blob();
         const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
-        console.log(`📄 File fetched successfully for upload: ${fileName}`);
+        console.log(`File fetched successfully for upload: ${fileName}`);
         return new File([blob], fileName, { type: blob.type || 'text/plain' });
     } catch (error) {
-        console.error(`🔴 Error fetching or creating File object for ${filePath}:`, error);
+        console.error(`Error fetching or creating File object for ${filePath}:`, error);
         return null;
     }
 }
 
-// -----------------------------------------------------------------------------
-// SECTION: STEP 2 - CREATE VECTOR STORE & UPLOAD FILES (Run Once)
-// -----------------------------------------------------------------------------
-
-
-// async function getFileObjectFromPublicPath(filePath) {
-//     try {
-//         const response = await fetch(filePath);
-//         if (!response.ok) { throw new Error(`Failed to fetch file: ${filePath}`); }
-//         const blob = await response.blob();
-//         const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
-//         console.log(`📄 File fetched successfully for upload: ${fileName}`);
-//         return new File([blob], fileName, { type: blob.type || 'text/plain' });
-//     } catch (error) {
-//         console.error(`🔴 Error fetching or creating File object for ${filePath}:`, error);
-//         return null;
-//     }
-// }
-
-
-// async function step2_createVectorStoreAndUploadFiles() {
-//     if (!openai) { console.error("🔴 OpenAI client not initialized..."); return null; }
-//     console.log("🔄 Attempting to create Vector Store and upload files (Step 2)...");
-//     try {
-//         const filePathsToUpload = ["/books.txt"]; // Ensure this is in your /public folder
-//         const fileObjects = await Promise.all(
-//             filePathsToUpload.map(path => getFileObjectFromPublicPath(path))
-//         );
-//         const validFileObjects = fileObjects.filter(file => file !== null);
-//         if (validFileObjects.length === 0) { return null; }
+// STEP 2 - CREATE VECTOR STORE & UPLOAD FILES (Run Once)
+async function step2_createVectorStoreAndUploadFiles() {
+    if (!openai) { console.error("OpenAI client not initialized..."); return null; }
+    console.log("Attempting to create Vector Store and upload files (Step 2)...");
+    try {
+        const filePathsToUpload = ["/books.txt"]; // Ensure this is in your /public folder
+        const fileObjects = await Promise.all(
+            filePathsToUpload.map(path => getFileObjectFromPublicPath(path))
+        );
+        const validFileObjects = fileObjects.filter(file => file !== null);
+        if (validFileObjects.length === 0) { return null; }
         
-//         console.log("   Creating Vector Store (using `openai.vectorStores.create`)...");
-//         if (!openai.vectorStores || typeof openai.vectorStores.create !== 'function') {
-//             console.error("🔴 Error: `openai.vectorStores.create` is not available...");
-//             return null;
-//         }
-//         const vectorStore = await openai.vectorStores.create({ name: "Book Files Knowledge Base" });
-//         console.log("   ✅ Vector Store created! ID:", vectorStore.id); // IMPORTANT: Save this ID
+        console.log("   Creating Vector Store (using `openai.vectorStores.create`)...");
+        if (!openai.vectorStores || typeof openai.vectorStores.create !== 'function') {
+            console.error("Error: `openai.vectorStores.create` is not available...");
+            return null;
+        }
+        const vectorStore = await openai.vectorStores.create({ name: "Book Files Knowledge Base" });
+        console.log("   Vector Store created! ID:", vectorStore.id); // IMPORTANT: Save this ID
 
-//         console.log(`   Uploading files to Vector Store ID: ${vectorStore.id}...`);
-//         if (!openai.vectorStores.fileBatches || typeof openai.vectorStores.fileBatches.uploadAndPoll !== 'function') {
-//             console.error("🔴 Error: `openai.vectorStores.fileBatches.uploadAndPoll` is not available...");
-//             return null;
-//         }
-//         await openai.vectorStores.fileBatches.uploadAndPoll(vectorStore.id, { files: validFileObjects });
-//         console.log("   ✅ Files uploaded to Vector Store!");
-//         return vectorStore.id;
-//     } catch (error) {
-//         console.error("🔴 Error during Vector Store setup (Step 2):", error);
-//         return null;
-//     }
-// }
-// -----------------------------------------------------------------------------
-// SECTION: STEP 3 - LINK VECTOR STORE TO ASSISTANT (Run Once After Step 1 & 2)
-// -----------------------------------------------------------------------------
+        console.log(`   Uploading files to Vector Store ID: ${vectorStore.id}...`);
+        if (!openai.vectorStores.fileBatches || typeof openai.vectorStores.fileBatches.uploadAndPoll !== 'function') {
+            console.error("Error: `openai.vectorStores.fileBatches.uploadAndPoll` is not available...");
+            return null;
+        }
+        await openai.vectorStores.fileBatches.uploadAndPoll(vectorStore.id, { files: validFileObjects });
+        console.log("   Files uploaded to Vector Store!");
+        return vectorStore.id;
+    } catch (error) {
+        console.error("Error during Vector Store setup (Step 2):", error);
+        return null;
+    }
+}
+
+// STEP 3 - LINK VECTOR STORE TO ASSISTANT (Run Once After Step 1 & 2)
 async function step3_linkVectorStoreToAssistant(assistantId, vectorStoreId) {
-    if (!openai || !assistantId || !vectorStoreId) { console.error("🔴 Missing client, assistantId, or vectorStoreId for link."); return null; }
-    console.log(`🔄 Linking Vector Store (ID: ${vectorStoreId}) to Assistant (ID: ${assistantId}) (Step 3)...`);
+    if (!openai || !assistantId || !vectorStoreId) { console.error("Missing client, assistantId, or vectorStoreId for link."); return null; }
+    console.log(`Linking Vector Store (ID: ${vectorStoreId}) to Assistant (ID: ${assistantId}) (Step 3)...`);
     try {
         const updatedAssistant = await openai.beta.assistants.update(assistantId, {
             tools: [{ type: "file_search" }],
             tool_resources: { file_search: { vector_store_ids: [vectorStoreId] } }
         });
-        console.log("✅🎉 Assistant updated with Vector Store (Step 3)!");
+        console.log("Assistant updated with Vector Store (Step 3)!");
         console.log("   Tools enabled:", updatedAssistant.tools);
         console.log("   Tool Resources:", updatedAssistant.tool_resources);
         return updatedAssistant;
     } catch (error) {
-        console.error("🔴 Error updating Assistant with Vector Store (Step 3):", error);
+        console.error("Error updating Assistant with Vector Store (Step 3):", error);
         return null;
     }
 }
 */
 
-// --- ACTIVE FUNCTION: INTERACT WITH THE ASSISTANT (Primary function for ongoing use) ---
-/**
- * Creates a thread, adds a message, runs the assistant, and gets the reply.
- * @param {string} userQuestion The question to ask the assistant.
- * @returns {Promise<Object>} The assistant's reply object or error object.
- */
+// Primary interaction function for ongoing use
 async function askAssistant(userQuestion) {
-    console.log(`💬 Asking Assistant: "${userQuestion}"`);
+    console.log(`Asking Assistant: "${userQuestion}"`);
     
     try {
         const response = await fetch('/api/ask-assistant', {
@@ -152,20 +123,18 @@ async function askAssistant(userQuestion) {
         }
 
         const result = await response.json();
-        console.log('✅ API Response received:', result);
+        console.log('API Response received:', result);
         
         return result;
     } catch (error) {
-        console.error('🔴 Error calling API:', error);
+        console.error('Error calling API:', error);
         return { error: `Network error: ${error.message}` };
     }
 }
 
-/**
- * Main function to set up the interaction listener.
- */
+// Main function to set up the interaction listener
 function setupInteraction() {
-    console.log('✅ Setting up UI interaction');
+    console.log('Setting up UI interaction');
     
     if (responseArea && responseArea.textContent === '...') {
         responseArea.textContent = "Describe your preferred reading style or a book you liked, and I'll try to find a match!";
@@ -179,39 +148,37 @@ function setupInteraction() {
                 return;
             }
             
-            // 1. Show Loading State
+            // Show Loading State
             loadingOverlay.style.display = 'flex';
-            responseSpace.style.display = 'none'; // Hide previous response
+            responseSpace.style.display = 'none';
             submitButton.disabled = true;
-            submitButton.textContent = 'Thinking...'; // Button text still useful
+            submitButton.textContent = 'Thinking...';
 
-            // 2. Call API
+            // Call API
             const result = await askAssistant(question);
 
-            // 3. Hide Loading State
+            // Hide Loading State
             loadingOverlay.style.display = 'none';
 
-            // 4. Process and Display Response
+            // Process and Display Response
             if (result.error) {
                 responseArea.innerHTML = `<strong>You:</strong> ${question}<br><strong>Error:</strong> ${result.error}`;
             } else if (result.success) {
                 responseArea.innerHTML = `<strong>You:</strong> ${question}<br><strong>AI Worm:</strong> ${result.text.replace(/\n/g, "<br>")}`;
-            } else { // Fallback for unexpected result structure or if 'text' is missing from success
+            } else {
                 responseArea.innerHTML = `<strong>You:</strong> ${question}<br><strong>AI Worm:</strong> ${result.text ? result.text.replace(/\n/g, "<br>") : "An unexpected issue occurred."}`;
             }
             
-            responseSpace.style.display = 'flex'; // Show the response container
-
-            // 5. Scroll to the response div
+            responseSpace.style.display = 'flex';
             responseSpace.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            // 6. Re-enable button (moved to a finally block if more complex error handling was needed, but fine here for now)
+            // Re-enable button
             submitButton.disabled = false;
             submitButton.textContent = 'Submit';
         });
-        console.log("✅ Submit button event listener attached.");
+        console.log("Submit button event listener attached.");
     } else {
-        console.error("🔴 Could not find all required elements for submit functionality (questionField, submitButton, loadingOverlay, responseSpace, responseArea).");
+        console.error("Could not find all required elements for submit functionality.");
     }
 
     if (retryButton && questionField && responseSpace && responseArea) {
@@ -219,19 +186,19 @@ function setupInteraction() {
             questionField.value = "";
             responseSpace.style.display = 'none';
             if (responseArea.textContent !== "Describe your preferred reading style or a book you liked, and I'll try to find a match!"){
-                 responseArea.innerHTML = "..."; // Reset only if it's not the initial prompt
+                 responseArea.innerHTML = "...";
             }
             questionField.focus();
-            console.log("🔄 Retry button clicked. Search reset.");
+            console.log("Retry button clicked. Search reset.");
         });
-        console.log("✅ Retry button event listener attached.");
+        console.log("Retry button event listener attached.");
     } else {
-        console.error("🔴 Could not find all elements for retry button functionality.");
+        console.error("Could not find all elements for retry button functionality.");
     }
-    console.log("✅ UI Interaction setup finished.");
+    console.log("UI Interaction setup finished.");
 }
 
-// --- SIMPLIFIED initialization ---
+// Initialize the application
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", setupInteraction);
 } else {

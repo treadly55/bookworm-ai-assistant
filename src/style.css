@@ -40,12 +40,11 @@ h1:hover {
   filter: drop-shadow(0 0 1em rgb(245, 240, 230));
 }
 
-
 main {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Keeps children like the <p> and .submain centered if they don't take full width */
-  width: 100%;       /* Ensures 'main' takes the full width of #app's content area */
+  align-items: center; 
+  width: 100%;
 }
 
 main p {
@@ -62,8 +61,8 @@ main p {
 .submain {
   display: flex;
   flex-direction: column;
-  width: 100%;       /* Ensures '.submain' takes the full width of 'main' */
-  align-items: center; /* Centers the #questionField (which is 90% width) within .submain */
+  width: 100%;      
+  align-items: center;
 }
 
 .submain > label {
@@ -80,9 +79,7 @@ main p {
   background-color: rgb(245, 240, 230);
   border: none;
   border-radius: 3px;
-  width: 90%;      /* This will now be 90% of the full available width */
-  /* It's also good practice to add box-sizing here, though not strictly necessary for this fix if no border/padding is on the input */
-  /* box-sizing: border-box; */
+  width: 90%;
 }
 
 button {
@@ -131,20 +128,19 @@ button:focus-visible {
 
 /* Overlay styles */
 
-
 .loading-overlay {
   display: none;
-  position: absolute; /* Positioned relative to #app */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(82, 45, 32, 0.85); /* Semi-transparent theme background */
-  z-index: 1000; /* Ensure it's on top */
+  background-color: rgba(82, 45, 32, 0.85); 
+  z-index: 1000;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: rgb(245, 240, 230); /* Light text color for contrast */
+  color: rgb(245, 240, 230); 
   font-family: 'Source Sans 3', sans-serif;
 }
 
@@ -154,8 +150,8 @@ button:focus-visible {
 }
 
 .loading-spinner {
-  border: 8px solid rgba(245, 240, 230, 0.3); /* Light grey border */
-  border-top: 8px solid rgb(199, 173, 127);    /* Theme color (from button) for spinner */
+  border: 8px solid rgba(245, 240, 230, 0.3); 
+  border-top: 8px solid rgb(199, 173, 127);    
   border-radius: 50%;
   width: 60px;
   height: 60px;
