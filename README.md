@@ -1,12 +1,30 @@
 # 📚 The Bookworm's Companion
 
-**The Bookworm's Companion** is an AI-powered book recommendation web application that utlizies OpenAI's Assistants API to ingest custom information and then search that information with a programmed 'agent'. 
+**The Bookworm's Companion** is an AI-powered book recommendation engine powered by OpenAI's Assistants API to ingest custom information and then search that information with a programmed 'agent'. 
 
-Using this codebase you can create your own agent and ingest your own custom information by following the instructions below. 
+-Utilizes OpenAI's Assistants API to:
 
-You can also just use the OpenAI platform to generate an assistants ID and update the code accordingly.
+ -Ingest custom information.
 
-This version of the AI assistant uses the GoodReads top 50 books for the month of May 2025 as the custom informaiton. The agent uses this information to suggest a book based on the users query.
+ -Search that information using a programmed agent.
+
+-Users can:
+
+ -Create their own agent.
+
+ -Ingest their own data by following provided instructions.
+
+-Alternatively, users can:
+
+ -Use the OpenAI platform to generate an assistant ID.
+
+ -Update the code with that ID.
+
+-This version uses:
+
+ -GoodReads top 50 books for May 2025 as the dataset.
+
+ -The agent suggests books based on user queries using that data.
 
 ## Working Example 
 https://bookworm-companion-sooty.vercel.app/
