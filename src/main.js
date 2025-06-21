@@ -233,7 +233,7 @@ function setupInteraction() {
         return;
     }
 
-    const assistantIdToUse = "asst_NzbAzRQH1o0ubQJRo34BGbuu"; // YOUR Assistant ID
+    const assistantIdToUse = "asst_izG16o3Nm10JCJrUns2uceBq"; // YOUR Assistant ID
 
     if (!assistantIdToUse) {
         console.error("🔴 FATAL: `assistantIdToUse` is not set.");
