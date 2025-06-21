@@ -1,30 +1,28 @@
 # 📚 The Bookworm's Companion
 
-**The Bookworm's Companion** is an AI-powered book recommendation web application that suggests personalized reading recommendations based on user preferences. The application leverages OpenAI's Assistant API with a custom knowledge base of curated book data to provide intelligent, context-aware book suggestions.
+**The Bookworm's Companion** is an AI-powered book recommendation web application that utlizies OpenAI's Assistants API to ingest custom information and then search that information with a programmed 'agent'. 
 
-The AI assistant analyzes user input about reading preferences, favorite genres, or previous books they've enjoyed, then searches through its knowledge base to recommend the most suitable titles from a curated collection.
+Using this codebase you can create your own agent and ingest your own custom information by following the instructions below. 
 
-**📱 Device Ready**
-* Configured to function as a PWA on iOS and Android devices
-* Installable app experience with offline capabilities
+You can also just use the OpenAI platform to generate an assistants ID and update the code accordingly.
 
-## 🛠 Tech Stack
+This version of the AI assistant uses the GoodReads top 50 books for the month of May 2025 as the custom informaiton. The agent uses this information to suggest a book based on the users query.
+
+## Working Example 
+https://bookworm-companion-sooty.vercel.app/
+
+## Tech Stack
 
 **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 **Build Tool**: Vite  
 **Backend**: Vercel Serverless Functions (Node.js)
 
-**APIs Used:**
-* OpenAI Assistant API (for AI recommendation logic)
-* OpenAI Vector Store (for book knowledge base)
-
-**Hosting**: Vercel
-
-## 🚀 Getting Started
+## Getting Started
 
 Follow these instructions to get a local copy of the project up and running for development and testing.
 
-### 📦 Installation
+
+### Installation
 
 1. **Clone the repository:**
 ```bash
@@ -80,24 +78,29 @@ npm run build
 
 ## 🤖 AI Assistant Setup
 
-This project uses a pre-configured OpenAI Assistant with:
+### Creating Your Own Assistant
 
-1. **Custom Knowledge Base**: Book data uploaded to OpenAI Vector Store
-2. **File Search Capabilities**: Enables intelligent search through book database
-3. **Optimized Instructions**: Tailored for book recommendation responses
+The code includes commented setup functions in `src/main.js` that show how to create your own assistant from scratch:
 
-The setup process (referenced in code comments) involves:
-- Creating an OpenAI Assistant
-- Uploading book data to a Vector Store
-- Linking the Vector Store to the Assistant with file search tools
+1. **Uncomment the setup functions** in `src/main.js`
+2. **Prepare your data file**: Place your book data (e.g., `books.txt`) in the `public/` folder
+3. **Run the setup process**:
 
-## 🌟 Features
+```javascript
+// Step 1: Create the assistant
+const assistantId = await step1_createAssistant();
 
-* AI-powered book recommendations based on user preferences
-* Progressive Web App with offline capabilities
-* Responsive design for all device sizes
-* Serverless backend architecture
-* Real-time recommendation responses
+// Step 2: Create vector store and upload your book data
+const vectorStoreId = await step2_createVectorStoreAndUploadFiles();
+
+// Step 3: Link the vector store to your assistant
+await step3_linkVectorStoreToAssistant(assistantId, vectorStoreId);
+```
+
+4. **Update your environment variables** with the new Assistant ID
+5. **Comment out the setup functions** once complete
+
+**Note**: The setup functions require the OpenAI SDK on the frontend. For production use, these should be run in a separate Node.js script or moved to serverless functions.
 
 ## 📄 License
 
